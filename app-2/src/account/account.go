@@ -1,7 +1,6 @@
 package account
 
 import (
-	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"math/rand/v2"
@@ -46,15 +45,6 @@ func NewAccount(login, password, urlString string) (*Account, error) {
 
 func (acc *Account) Print() {
 	fmt.Println(acc.CreatedAt, " ", acc.UpdatedAt, " ", acc.Url, " ", acc.Login, " ", acc.Password)
-}
-
-func (acc *Account) ToJSONBytes() ([]byte, error) {
-	file, err := json.Marshal(acc)
-	if err != nil {
-		return nil, err
-	}
-
-	return file, nil
 }
 
 func (acc *Account) generatePassword(n int) {

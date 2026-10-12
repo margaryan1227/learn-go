@@ -22,12 +22,12 @@ func WriteFile(path string, data []byte) {
 	fmt.Println("Successfully wrote " + path)
 }
 
-func ReadFile(path string) {
+func ReadFile(path string) ([]byte, error) {
 	file, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return nil, err
 	}
 
-	fmt.Println(string(file))
+	return file, nil
 }

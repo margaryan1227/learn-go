@@ -25,7 +25,7 @@ Menu:
 			createAccount(vault)
 			break Input
 		case "d":
-			deleteAccount()
+			deleteAccount(vault)
 			break Input
 		case "r":
 			readAccount(vault)
@@ -51,7 +51,7 @@ func readAccount(vault *account.Vault) {
 	url := promptData("Insert url you want to read")
 
 	result := vault.FindAccountByUrl(url)
-	color.Cyan("%s", "Accounts found account: ", result)
+	color.Cyan("%s", "Accounts found: ", result)
 }
 
 func createAccount(vault *account.Vault) {
@@ -75,7 +75,13 @@ func createAccount(vault *account.Vault) {
 	files.WriteFile("accounts.json", bytes)
 }
 
-func deleteAccount() {}
+func deleteAccount(vault *account.Vault) {
+	url := promptData("Insert url you want to delete")
+
+	result := vault.DeleteByUrl(url)
+	color.Cyan("%s", "Accounts found and deleted: ", result)
+
+}
 
 func promptData(prompt string) string {
 	var res string

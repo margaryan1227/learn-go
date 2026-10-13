@@ -2,7 +2,7 @@ package account
 
 import (
 	"app-2/src/files"
-	"encoding/json/v2"
+	"encoding/json"
 	"strings"
 	"time"
 
@@ -57,6 +57,26 @@ func (vault *Vault) FindAccountByUrl(urlString string) []Account {
 	}
 
 	return accounts
+}
+
+func (vault *Vault) DeleteByUrl(url string) []Account {
+
+	deletedAccounts := make([]Account, 0)
+	for idx, account := range vault.Accounts {
+		if strings.Contains(account.Url, url) {
+			deletedAccounts = append(deletedAccounts, account)
+			vault.Accounts = append(vault.Accounts[:idx], vault.Accounts[idx+1:]...)
+		}
+	}
+
+	data, err := vault.ToJSONBytes()
+	if err != nil {
+		color.Red("%s", "Error converting accounts to json: ", err)
+		return deletedAccounts
+	}
+	files.WriteFile("accounts.json", data)
+
+	return deletedAccounts
 }
 
 func (vault *Vault) ToJSONBytes() ([]byte, error) {

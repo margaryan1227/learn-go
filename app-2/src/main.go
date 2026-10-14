@@ -10,7 +10,7 @@ import (
 
 func main() {
 	color.Magenta("%s", "Initializing account-manager-cli 0.0.1...")
-	vault, err := account.NewVault()
+	vault, err := account.NewVault(files.NewJsonDB("accounts.json"))
 	if err != nil {
 		return
 	}
@@ -41,20 +41,20 @@ Menu:
 
 func menu() string {
 	input := ""
-	color.Cyan("%s: ", "Select the option to c(reate), d(elete), r(ead) account or q(iut)")
+	color.Cyan("%s: ", "Select the option to c(reate), d(elete), r(ead) account or q(uit)")
 	fmt.Scanf("%s", &input)
 
 	return input
 }
 
-func readAccount(vault *account.Vault) {
+func readAccount(vault *account.VaultWithDB) {
 	url := promptData("Insert url you want to read")
 
 	result := vault.FindAccountByUrl(url)
 	color.Cyan("%s", "Accounts found: ", result)
 }
 
-func createAccount(vault *account.Vault) {
+func createAccount(vault *account.VaultWithDB) {
 	acc1, err := account.NewAccount(
 		promptData("Insert login"),
 		promptData("Insert password"),
@@ -68,14 +68,9 @@ func createAccount(vault *account.Vault) {
 	acc1.Print()
 
 	vault.AddAccount(*acc1)
-	bytes, err := vault.ToJSONBytes()
-	if err != nil {
-		color.Red("%s", "Can't marshal account to json")
-	}
-	files.WriteFile("accounts.json", bytes)
 }
 
-func deleteAccount(vault *account.Vault) {
+func deleteAccount(vault *account.VaultWithDB) {
 	url := promptData("Insert url you want to delete")
 
 	result := vault.DeleteByUrl(url)

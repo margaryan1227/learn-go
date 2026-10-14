@@ -14,40 +14,51 @@ type Vault struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func NewVault() (*Vault, error) {
-	file, err := files.ReadFile("accounts.json")
+type VaultWithDB struct {
+	Vault
+	db files.JsonDB
+}
+
+func NewVault(db *files.JsonDB) (*VaultWithDB, error) {
+	file, err := db.Read()
 	if err != nil {
-		return &Vault{
+		return &VaultWithDB{
 			Accounts:  []Account{},
 			UpdatedAt: time.Now(),
+			db:        *db,
 		}, nil
 	}
 
-	var vault Vault
+	var vault VaultWithDB
 
 	err = json.Unmarshal(file, &vault)
 	if err != nil {
 		color.Red("%s", "Error reading file: ", err)
-		return &Vault{
+		return &VaultWithDB{
 			Accounts:  []Account{},
 			UpdatedAt: time.Now(),
+			db:        *db,
 		}, nil
 	}
 
-	return &vault, err
+	return &VaultWithDB{
+		Accounts:  vault.Accounts,
+		UpdatedAt: vault.UpdatedAt,
+		db:        *db,
+	}, err
 }
 
-func (vault *Vault) AddAccount(account Account) {
+func (vault *VaultWithDB) AddAccount(account Account) {
 	vault.Accounts = append(vault.Accounts, account)
 	data, err := vault.ToJSONBytes()
 	if err != nil {
 		color.Red("%s", "Error converting accounts to json: ", err)
 	}
 
-	files.WriteFile("accounts.json", data)
+	vault.db.Write(data)
 }
 
-func (vault *Vault) FindAccountByUrl(urlString string) []Account {
+func (vault *VaultWithDB) FindAccountByUrl(urlString string) []Account {
 	var accounts = make([]Account, 2)
 
 	for _, account := range vault.Accounts {
@@ -59,8 +70,7 @@ func (vault *Vault) FindAccountByUrl(urlString string) []Account {
 	return accounts
 }
 
-func (vault *Vault) DeleteByUrl(url string) []Account {
-
+func (vault *VaultWithDB) DeleteByUrl(url string) []Account {
 	deletedAccounts := make([]Account, 0)
 	for idx, account := range vault.Accounts {
 		if strings.Contains(account.Url, url) {
@@ -74,7 +84,7 @@ func (vault *Vault) DeleteByUrl(url string) []Account {
 		color.Red("%s", "Error converting accounts to json: ", err)
 		return deletedAccounts
 	}
-	files.WriteFile("accounts.json", data)
+	vault.db.Write(data)
 
 	return deletedAccounts
 }
